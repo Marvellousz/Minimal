@@ -14,8 +14,33 @@ const postRoutes = require('./routes/posts');
 
 // Middleware
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
-  credentials: true
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'https://minimal-eta-silk.vercel.app',
+      process.env.CLIENT_URL
+    ].filter(Boolean); // Remove any undefined values
+    
+    // Check if origin is allowed (with or without trailing slash)
+    const isAllowed = allowedOrigins.some(allowedOrigin => {
+      return origin === allowedOrigin || 
+             origin === allowedOrigin + '/' || 
+             allowedOrigin === origin + '/';
+    });
+    
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.log('CORS blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json({ limit: '10mb' }));
@@ -30,6 +55,21 @@ app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
     message: 'Server is running',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Root route - fixes "Cannot GET /" error on Render
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Minimal Blog API',
+    status: 'Server is running',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      auth: '/api/auth',
+      posts: '/api/posts'
+    },
     timestamp: new Date().toISOString()
   });
 });
