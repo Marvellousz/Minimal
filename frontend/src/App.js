@@ -3,7 +3,7 @@ import { Heart, User, Calendar, Eye, Plus, Menu, X, LogOut } from 'lucide-react'
 import './App.css';
 
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://minimal-oh4a.onrender.com/api'
+  ? 'https://minimal-i33u.onrender.com/api'
   : 'http://localhost:5000/api';
 
 // AuthForm component - optimized to prevent weird behaviors
